@@ -5,7 +5,16 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.core.config import settings
-from app.models import Organization, OrganizationUser, RefreshToken, User  # noqa: F401
+from app.models import (  # noqa: F401
+    Organization,
+    OrganizationUser,
+    OrganizationUserRole,
+    Permission,
+    RefreshToken,
+    Role,
+    RolePermission,
+    User,
+)
 from app.models.base import Base
 
 

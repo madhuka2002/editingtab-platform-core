@@ -1,5 +1,6 @@
+import uuid
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, Callable
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -7,10 +8,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db_session
-from app.models import User
-from app.repositories import RefreshTokenRepository, UserRepository
-from app.services import AuthService, InvalidAuthenticationError
+from app.models import OrganizationUser, User
+from app.repositories import (
+    AuthorizationRepository,
+    RefreshTokenRepository,
+    UserRepository,
+)
+from app.services import (
+    AuthService,
+    AuthorizationDeniedError,
+    AuthorizationService,
+    InvalidAuthenticationError,
+)
 from app.services.auth import AUTHENTICATION_ERROR_MESSAGE
+from app.services.authorization import AUTHORIZATION_ERROR_MESSAGE
 
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -26,6 +37,12 @@ def get_auth_service(
         timedelta(minutes=settings.access_token_expire_minutes),
         timedelta(days=settings.refresh_token_expire_days),
     )
+
+
+def get_authorization_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> AuthorizationService:
+    return AuthorizationService(AuthorizationRepository(session))
 
 
 async def get_current_user(
@@ -49,3 +66,29 @@ async def get_current_user(
             detail=AUTHENTICATION_ERROR_MESSAGE,
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
+
+
+def require_permission(
+    permission_code: str,
+) -> Callable[..., object]:
+    async def permission_dependency(
+        organization_id: uuid.UUID,
+        current_user: Annotated[User, Depends(get_current_user)],
+        authorization_service: Annotated[
+            AuthorizationService,
+            Depends(get_authorization_service),
+        ],
+    ) -> OrganizationUser | None:
+        try:
+            return await authorization_service.require_permission(
+                current_user,
+                organization_id,
+                permission_code,
+            )
+        except AuthorizationDeniedError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=AUTHORIZATION_ERROR_MESSAGE,
+            ) from exc
+
+    return permission_dependency

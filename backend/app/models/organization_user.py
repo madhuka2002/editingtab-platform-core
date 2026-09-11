@@ -13,6 +13,11 @@ class OrganizationUser(Base):
     __table_args__ = (
         UniqueConstraint(
             "organization_id",
+            "id",
+            name="uq_organization_users_organization_id_id",
+        ),
+        UniqueConstraint(
+            "organization_id",
             "user_id",
             name="uq_organization_users_organization_id_user_id",
         ),
