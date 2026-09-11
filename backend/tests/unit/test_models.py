@@ -1,6 +1,6 @@
 from sqlalchemy import CheckConstraint, UniqueConstraint
 
-from app.models import OrganizationUser, User
+from app.models import OrganizationUser, RefreshToken, User
 
 
 def test_user_email_is_normalized() -> None:
@@ -57,4 +57,14 @@ def test_organization_membership_foreign_keys_restrict_deletion() -> None:
     table = OrganizationUser.__table__
 
     assert next(iter(table.c.organization_id.foreign_keys)).ondelete == "RESTRICT"
+    assert next(iter(table.c.user_id.foreign_keys)).ondelete == "RESTRICT"
+
+
+def test_refresh_token_persistence_is_digest_only_and_restricts_deletion() -> None:
+    table = RefreshToken.__table__
+
+    assert "token_digest" in table.c
+    assert "refresh_token" not in table.c
+    assert table.c.token_digest.unique is True
+    assert table.c.token_digest.index is True
     assert next(iter(table.c.user_id.foreign_keys)).ondelete == "RESTRICT"
