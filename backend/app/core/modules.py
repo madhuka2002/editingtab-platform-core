@@ -1,0 +1,3 @@
+BOOKING_MODULE = "booking"
+
+SUPPORTED_MODULE_CODES = frozenset({BOOKING_MODULE})

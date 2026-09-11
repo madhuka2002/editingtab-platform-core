@@ -1,4 +1,5 @@
 from app.models.organization import Organization
+from app.models.organization_module_entitlement import OrganizationModuleEntitlement
 from app.models.organization_user import OrganizationUser
 from app.models.organization_user_role import OrganizationUserRole
 from app.models.permission import Permission
@@ -9,6 +10,7 @@ from app.models.user import User
 
 __all__ = [
     "Organization",
+    "OrganizationModuleEntitlement",
     "OrganizationUser",
     "OrganizationUserRole",
     "Permission",
