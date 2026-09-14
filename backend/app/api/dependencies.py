@@ -11,6 +11,7 @@ from app.core.database import get_db_session
 from app.models import OrganizationUser, User
 from app.repositories import (
     AuthorizationRepository,
+    ManagementRepository,
     EntitlementRepository,
     ProvisioningRepository,
     RefreshTokenRepository,
@@ -23,6 +24,7 @@ from app.services import (
     AuthorizationService,
     EntitlementService,
     InvalidAuthenticationError,
+    ManagementService,
     OrganizationProvisioningService,
 )
 from app.services.auth import AUTHENTICATION_ERROR_MESSAGE
@@ -48,6 +50,12 @@ def get_authorization_service(
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> AuthorizationService:
     return AuthorizationService(AuthorizationRepository(session))
+
+
+def get_management_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> ManagementService:
+    return ManagementService(ManagementRepository(session), UnitOfWork(session))
 
 
 def get_provisioning_service(

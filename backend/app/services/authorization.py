@@ -72,6 +72,7 @@ class AuthorizationService:
             membership is None
             or role is None
             or not membership.is_active
+            or role.is_active is False
             or membership.organization_id != organization_id
             or role.organization_id != organization_id
         ):

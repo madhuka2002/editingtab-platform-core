@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from app.api.dependencies import get_auth_service, get_current_user
+from app.api.dependencies import get_auth_service, get_current_user, get_management_service
 from app.models import User
 from app.schemas import (
     CurrentUserResponse,
@@ -11,7 +11,8 @@ from app.schemas import (
     RefreshRequest,
     TokenResponse,
 )
-from app.services import AuthService, InvalidAuthenticationError
+from app.schemas.management import CurrentOrganizationResponse
+from app.services import AuthService, InvalidAuthenticationError, ManagementService
 from app.services.auth import AUTHENTICATION_ERROR_MESSAGE
 
 
@@ -81,3 +82,11 @@ async def current_user(
     user: Annotated[User, Depends(get_current_user)],
 ) -> CurrentUserResponse:
     return CurrentUserResponse.model_validate(user)
+
+
+@router.get("/me/organizations", response_model=list[CurrentOrganizationResponse])
+async def current_user_organizations(
+    user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[ManagementService, Depends(get_management_service)],
+):
+    return await service.current_organizations(user.id)

@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
+    Organization,
     OrganizationUser,
     OrganizationUserRole,
     Permission,
@@ -22,9 +23,13 @@ class AuthorizationRepository:
         user_id: uuid.UUID,
     ) -> OrganizationUser | None:
         result = await self._session.execute(
-            select(OrganizationUser).where(
+            select(OrganizationUser).join(
+                Organization,
+                Organization.id == OrganizationUser.organization_id,
+            ).where(
                 OrganizationUser.organization_id == organization_id,
                 OrganizationUser.user_id == user_id,
+                Organization.is_active.is_(True),
             )
         )
         return result.scalar_one_or_none()
@@ -53,7 +58,8 @@ class AuthorizationRepository:
                 OrganizationUserRole.role_id == RolePermission.role_id,
             )
             .where(
-                OrganizationUserRole.organization_user_id == membership_id
+                OrganizationUserRole.organization_user_id == membership_id,
+                Role.is_active.is_(True),
             )
             .distinct()
         )
@@ -70,7 +76,8 @@ class AuthorizationRepository:
                 OrganizationUserRole.role_id == Role.id,
             )
             .where(
-                OrganizationUserRole.organization_user_id == membership_id
+                OrganizationUserRole.organization_user_id == membership_id,
+                Role.is_active.is_(True),
             )
             .distinct()
         )

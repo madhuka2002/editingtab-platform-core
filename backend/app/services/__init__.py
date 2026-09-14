@@ -3,6 +3,7 @@ from app.services.authorization import (
     AuthorizationDeniedError,
     AuthorizationService,
 )
+from app.services.management import ManagementConflictError, ManagementNotFoundError, ManagementService
 from app.services.entitlement import EntitlementService, UnsupportedModuleError
 from app.services.provisioning import (
     OrganizationProvisioningService,
@@ -13,6 +14,9 @@ __all__ = [
     "AuthService",
     "AuthorizationDeniedError",
     "AuthorizationService",
+    "ManagementConflictError",
+    "ManagementNotFoundError",
+    "ManagementService",
     "EntitlementService",
     "InvalidAuthenticationError",
     "OrganizationProvisioningService",
